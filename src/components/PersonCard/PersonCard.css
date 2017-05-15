@@ -1,0 +1,23 @@
+@import '../variables.css';
+
+.root.active{
+    background: #94d9f5;
+}
+
+.root{
+    min-width: 250px;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 30px;
+    position: relative;
+    background: #f6f6f6;
+    box-shadow: 0 10px 10px rgba(0,0,0,.09);
+    transition: all 250ms cubic-bezier(.02, .01, .47, 1);
+}
+
+.rootClickable:hover{
+    cursor: pointer;
+    box-shadow: 0 20px 20px rgba(0,0,0,.16);
+    transform: translate(0,-5px);
+    transition-delay: 0s !important;
+}

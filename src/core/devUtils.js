@@ -17,9 +17,7 @@ if (module.hot || __DEV__) {
 
     // Force-updates React component tree recursively
     // https://github.com/gaearon/react-deep-force-update
-    deepForceUpdate: require('react-deep-force-update'),
-    getUserFromSession: () => { return JSON.parse(sessionStorage.getItem("crewbrick"));},
-    setUserToSession: (user) => { sessionStorage.setItem('crewbrick', JSON.stringify(user));},
-    removeUserFromSession: (user) => { sessionStorage.removeItem('crewbrick');}
+    deepForceUpdate: require('react-deep-force-update')
+
   };
 }

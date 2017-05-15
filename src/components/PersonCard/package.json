@@ -1,0 +1,6 @@
+{
+    "name": "PersonCard",
+    "version": "0.0.0",
+    "private": true,
+    "main": "./PersonCard.js"
+}

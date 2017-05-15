@@ -10,6 +10,9 @@
 import React from 'react';
 import { Button, Collapse, FormGroup, ControlLabel, FormControl, HelpBlock, Grid, Row, Col,
 Modal, Navbar, Nav, NavItem, Well, Alert} from 'react-bootstrap';
+import history from '../../core/history';
+import { setUserToSession } from '../../core/appUtils';
+
 
 class LoginButton extends React.Component {
 
@@ -47,15 +50,21 @@ class LoginButton extends React.Component {
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
+              "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Credentials": true
             },
             body: JSON.stringify({
               email: email,
               password: password,
-            })
-          }).then(function(response){
-              sessionStorage.setItem('crewbrick', JSON.stringify(response.data));
-              _this.props.updateUser(response.data);
-              _this.close();
+            }),
+            credentials: 'include'
+          })
+          .then((res) => { return res.json(); })
+          .then(function(responseData){
+                setUserToSession(responseData);
+                history.push('/myProjects');
+                _this.close();
           }).catch(function(error){
               _this.setState({formError:error});
           });
@@ -71,7 +80,7 @@ class LoginButton extends React.Component {
         Config.pipeClient.savePerson(person.name, person.email).then(response => {
                 console.log(response);
                 if(response){
-                     sessionStorage.setItem('crewbrick', JSON.stringify(response));
+                     setUserToSession(response);
                      signinObj.props.updateUser(response);
                      signinObj.close();
                 }

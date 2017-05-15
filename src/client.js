@@ -15,7 +15,7 @@ import { createPath } from 'history/PathUtils';
 import history from './core/history';
 import App from './components/App';
 import { updateMeta } from './core/DOMUtils';
-import { ErrorReporter, deepForceUpdate, getUserFromSession } from './core/devUtils';
+import { ErrorReporter, deepForceUpdate, getUserFromSession } from './core/appUtils';
 
 /* eslint-disable global-require */
 
@@ -24,6 +24,7 @@ import { ErrorReporter, deepForceUpdate, getUserFromSession } from './core/devUt
 const context = {
   // Enables critical path CSS rendering
   // https://github.com/kriasoft/isomorphic-style-loader
+  currentUser: JSON.parse(localStorage.getItem("crewbrick")),
   insertCss: (...styles) => {
     // eslint-disable-next-line no-underscore-dangle
     const removeCss = styles.map(x => x._insertCss());
@@ -92,6 +93,14 @@ let router = require('./core/router').default;
 // Re-render the app when window.location changes
 async function onLocationChange(location, action) {
   // Remember the latest scroll position for the previous location
+
+//  if(location.pathname !== '/'){
+//    fetch('/user', {credentials: 'include', cache: "no-cache"}).then((res) => {
+//    return !res.redirected ?res.json():null;
+//    }).then(response => {
+//          !response || !response.id ? history.push('/') : null;
+//      });
+//  }
   scrollPositionsHistory[currentLocation.key] = {
     scrollX: window.pageXOffset,
     scrollY: window.pageYOffset,

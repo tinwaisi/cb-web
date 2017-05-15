@@ -278,7 +278,7 @@ const serverConfig = {
     (context, request, callback) => {
       const isExternal =
         request.match(/^[@a-z][a-z/.\-0-9]*$/i) &&
-        !request.match(/\.(css|less|scss|sss)$/i);
+        !request.match(/\.(css|less|scss|sss)$/i) && request !== 'node-pipedrive';
       callback(null, Boolean(isExternal));
     },
   ],

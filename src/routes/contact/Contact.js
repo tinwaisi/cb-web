@@ -18,7 +18,7 @@ class Contact extends React.Component {
     title: PropTypes.string.isRequired,
   };
   componentDidMount(){
-      fetch('/users').then(function(response){
+      fetch('/users', {credentials: 'include'}).then(function(response){
           console.log(response);
       });
   };

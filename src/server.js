@@ -12,6 +12,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import expressJwt from 'express-jwt';
+import session from 'express-session'
 import expressGraphQL from 'express-graphql';
 import jwt from 'jsonwebtoken';
 import React from 'react';
@@ -26,10 +27,25 @@ import router from './core/router';
 import models from './data/models';
 import schema from './data/schema';
 import assets from './assets.json'; // eslint-disable-line import/no-unresolved
-import { port, auth } from './config';
+var LocalStrategy = require('passport-local').Strategy;
+
+import { port, auth, dataMap } from './config';
 var crm = require('./data/models/Crm.js');
+var googleCalendar = require('./data/models/GoogleCalendar.js');
+//var sessionMiddleware = session({resave: false, saveUninitialized: true, secret:'crewbrick',  cookie: { secure: false }});
+
 
 const app = express();
+app.use(cookieParser());
+
+app.use(session({
+    resave: false,
+    saveUninitialized: true,
+    secret: 'crewbrick',
+    cookie:{maxAge:600000}
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 //
 // Tell any CSS tooling (such as Material UI) to use all vendor prefixes if the
@@ -42,7 +58,6 @@ global.navigator.userAgent = global.navigator.userAgent || 'all';
 // Register Node.js middleware
 // -----------------------------------------------------------------------------
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -54,7 +69,7 @@ app.use(expressJwt({
   credentialsRequired: false,
   getToken: req => req.cookies.id_token,
 }));
-app.use(passport.initialize());
+
 
 if (__DEV__) {
   app.enable('trust proxy');
@@ -72,9 +87,39 @@ app.get('/login/facebook/return',
   },
 );
 
-app.get('/users', crm.getUsers);
-app.post('/login', crm.loginUser);
+app.get('/login/google', passport.authenticate('google', {
+  scope: ['openid', 'email', 'https://www.googleapis.com/auth/calendar'],
+  session: false,
+  accessType: 'offline',
+  prompt: 'consent'
+}));
+app.get('/auth/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/myCalendar' }),
+    function(req, res) {
+        req.session.googleToken = req.user.googleToken;
+        req.session.save();
+        res.redirect('/myCalendar');
+    }
+);
 
+app.get('/user', crm.getUser);
+app.get('/users', crm.getUsers);
+app.get('/users/:id', crm.getUserById);
+app.get('/users/:userId/deals', crm.getUserDeals);
+app.get('/deals/:id', crm.getDeal);
+app.get('/deals/:id/candidates', crm.getCandidatesForProject);
+app.put('/deals/:id', crm.updateDeal);
+app.delete('/deals/:id', crm.deleteDeal);
+app.post('/login', crm.loginUser);
+app.post('/deals', crm.createDeal);
+app.post('/deals/:id/participants', crm.addParticipantsToDeal);
+
+//Calendar API
+app.get('/users/:id/calendar', googleCalendar.getUserEvents);
+
+app.get('/signout', (req, res)=>{
+    req.logout();
+    res.redirect('/');
+});
 //
 // Register API middleware
 // -----------------------------------------------------------------------------

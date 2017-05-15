@@ -1,0 +1,5 @@
+@import '../variables.css';
+
+.well.active{
+    background: #94d9f5;
+}

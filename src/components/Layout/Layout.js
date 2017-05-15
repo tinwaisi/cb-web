@@ -18,6 +18,9 @@ class Layout extends React.Component {
   static propTypes = {
     children: PropTypes.node.isRequired,
   };
+   contextTypes: {
+        currentUser: React.PropTypes.object
+    }
 
   render() {
     return (

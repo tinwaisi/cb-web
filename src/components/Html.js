@@ -34,10 +34,11 @@ class Html extends React.Component {
         <head>
           <meta charSet="utf-8" />
           <meta httpEquiv="x-ua-compatible" content="ie=edge" />
-          <title>{title}</title>
+          <title>Crewbrick - {title}</title>
           <meta name="description" content={description} />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css"/>
+          <link rel="stylesheet" href="react-big-calendar.css"/>
           <link rel="apple-touch-icon" href="apple-touch-icon.png" />
           {styles.map(style =>
             <style

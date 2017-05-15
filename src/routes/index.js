@@ -19,9 +19,13 @@ export default {
     require('./home').default,
     require('./contact').default,
     require('./login').default,
+    require('./createProject').default,
+    require('./pickCrew').default,
+    require('./myProjects').default,
+    require('./projectDetails').default,
+    require('./myCalendar').default,
     require('./register').default,
     require('./about').default,
-    require('./privacy').default,
     require('./admin').default,
 
     // Wildcard routes, e.g. { path: '*', ... } (must go last)
@@ -33,7 +37,7 @@ export default {
     const route = await next();
 
     // Provide default values for title, description etc.
-    route.title = `${route.title || 'Untitled Page'} - www.reactstarterkit.com`;
+    route.title = `${route.title || ''} - www.reactstarterkit.com`;
     route.description = route.description || '';
 
     return route;

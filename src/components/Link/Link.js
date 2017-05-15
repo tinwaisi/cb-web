@@ -9,6 +9,7 @@
 
 import React, { PropTypes } from 'react';
 import history from '../../core/history';
+import { Button} from 'react-bootstrap';
 
 function isLeftClickEvent(event) {
   return event.button === 0;
@@ -21,6 +22,7 @@ function isModifiedEvent(event) {
 class Link extends React.Component {
   static propTypes = {
     to: PropTypes.string.isRequired,
+    buttonClass: PropTypes.string,
     children: PropTypes.node.isRequired,
     onClick: PropTypes.func,
   };
@@ -47,8 +49,8 @@ class Link extends React.Component {
   };
 
   render() {
-    const { to, children, ...props } = this.props;
-    return <a href={to} {...props} onClick={this.handleClick}>{children}</a>;
+    const { to, children, buttonClass, ...props } = this.props;
+    return buttonClass ? <a href={to} {...props} onClick={this.handleClick}><Button className={buttonClass}>{children}</Button></a> : <a href={to} {...props} onClick={this.handleClick}>{children}</a>;
   }
 }
 
