@@ -1,3 +1,5 @@
+
+
 module.exports = {
     getUserFromSession: function(){
         return JSON.parse(window.localStorage.getItem("crewbrick"));

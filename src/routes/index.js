@@ -23,10 +23,8 @@ export default {
     require('./pickCrew').default,
     require('./myProjects').default,
     require('./projectDetails').default,
+    require('./payment').default,
     require('./myCalendar').default,
-    require('./register').default,
-    require('./about').default,
-    require('./admin').default,
 
     // Wildcard routes, e.g. { path: '*', ... } (must go last)
     require('./notFound').default,

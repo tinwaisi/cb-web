@@ -2,6 +2,7 @@ var dataMap = require('../../config').dataMap;
 var pipedrive = require('./pipedrive');
 var googleCalendar = require('./GoogleCalendar');
 var pipeClient = pipedrive('505abada69fc2b644fc18f97c7a084635086ef5f');
+const _ = require('lodash');
 
 var sensitiveInfoList = ["password", "salary", "calendarRefreshToken", "calendarAccessToken"];
 var personAvailabilityCache = {};
@@ -67,7 +68,7 @@ exports.getUsers = function(req, res){
 exports.getUser = function(req, res){
     console.log("get user sessionid", req.session.id);
     console.log("get user", req.user);
-    res.send({user: req.user});
+    req.user ? res.send({user: req.user}) : res.status(403).send({message: 'User not logged in.'});
 };
 
 exports.getUserDeals = function(req, res){
@@ -153,6 +154,24 @@ exports.createDeal = function(req, res){
             }).catch((e)=>{
                 return res.send(e);
             });
+};
+exports.createPerson = function(req, res){
+    var form = req.body.form,
+        customFields = {};
+    console.log('form', form);
+    _.each(form, (value, key)=>{
+        console.log('key, dataMap.PERSON_FIELD_MAP[key]', key, dataMap.PERSON_FIELD_MAP[key]);
+        if(dataMap.PERSON_FIELD_MAP[key]){
+            customFields[dataMap.PERSON_FIELD_MAP[key]] = value;
+        }
+    });
+    pipeClient.savePerson(form.name, form.email, null, null, null, customFields).then(response => {
+        console.log(response);
+        return res.send(response);
+
+    }).catch((e)=>{
+        return res.send(e);
+    });
 };
 
 exports.addParticipantsToDeal = function(req, res){
@@ -306,9 +325,12 @@ exports.getCandidatesForProject = function(req, res){
 
 exports.respondToProject = function(req, res){
      if(req.user && req.params.id && req.body.response){
+        console.log('respondToProject req.params.id req.body.response', req.params.id, req.body.response);
         pipeClient.makeRequest('/deals/'+req.params.id, 'get').then(response => {
-            if(response.id){
-                var positions = JSON.parse(response[dataMap.PROJECT_FIELD_MAP.positionsNeeded]);
+            if(response.data.id){
+                console.log('respondToProject got deal', response);
+                var project = response.data;
+                var positions = JSON.parse(project[dataMap.PROJECT_FIELD_MAP.positionsNeeded]);
                 var isLastResponse = true;
                 for (var i=0, l=positions.items.length; i<l; i++){
                     if(positions.items[i].personId === req.user.id){
@@ -319,13 +341,35 @@ exports.respondToProject = function(req, res){
                     }
                 }
                 var updatedProject = {};
-                updatedProject[dataMap.PROJECT_FIELD_MAP.positionsNeeded] = positions;
+                updatedProject[dataMap.PROJECT_FIELD_MAP.positionsNeeded] = JSON.stringify(positions);
                 !!isLastResponse ? updatedProject.stage_id = dataMap.PROJECT_STAGES.Confirmed : null;
-                 pipeClient.makeRequest(`/deals/${dealId}`, 'put', updatedProject).then(updateDealRes => {
-                    if(updateDealRes.id){
-                        //TODO: mark to user calendar
-                        if(req.body.response==="accepted"){
+                console.log('respondToProject updatedProject', updatedProject);
+                console.log('respondToProject isLastResponse', isLastResponse);
 
+                 pipeClient.makeRequest(`/deals/${project.id}`, 'put', updatedProject).then(updateDealRes => {
+                    console.log('respondToProject Updated deal', updateDealRes);
+                    if(updateDealRes.data.id){
+                        console.log('respondToProject Updated deal', updateDealRes);
+                        if(req.body.response==="accepted"){
+                            var filmDate = new Date(project[dataMap.PROJECT_FIELD_MAP.filmingDates]);
+                            var mm = filmDate.getMonth() +1;
+                            var dd = filmDate.getDate();
+                            var formattedDate = `${filmDate.getFullYear()}-${(mm>9 ? '' : '0') + mm }-${(dd>9 ? '' : '0') + dd}`;
+                            console.log('respondToProject formattedDate', formattedDate);
+                            googleCalendar.internalMarkToUserCalendar(
+                                req.user[dataMap.PERSON_FIELD_MAP.calendarAccessToken],
+                                req.user[dataMap.PERSON_FIELD_MAP.calendarRefreshToken],
+                                req.user[dataMap.PERSON_FIELD_MAP.calendarId],
+                                formattedDate,
+                                formattedDate,
+                                project.title,
+                                'This event was created via Crewbrick.\n' + project[dataMap.PROJECT_FIELD_MAP.description]
+                            ).then((data)=>{
+                                console.log('respondToProject marked to calendar', data);
+                                res.send(data);
+                            }).catch((e)=>{
+                                res.status(500).send(e);
+                            });
                         }else {
                             res.send(updateDealRes);
                         }
@@ -339,76 +383,13 @@ exports.respondToProject = function(req, res){
         res.send(403, "User not logged in")
      }
 };
-//exports.filterUsers = function(req, res){
-//    var filters = req.body.filter;
-//    var filterId = generateId();
-//    var filterConditions = [];
-//    var timeMin = req.body.timeMin;
-//    var timeMax = req.body.timeMax;
-//    if(filters){
-//        for(key in filters){
-//            filters.hasOwnProperty(key) ? filterConditions.push({
-//                "object": "person",
-//                "field_id": key,
-//                "operator": filters[key].operator,
-//                "value": filters[key].value,
-//                "extra_value": null
-//            }) : null;
-//        }
-//        //Filter out the user himself
-//        req.user.id ? filterConditions.push({
-//            "object": "person",
-//            "field_id": "id",
-//            "operator": "!=",
-//            "value": req.user.id,
-//            "extra_value": null
-//        }) : null;
-//    }
-//
-//    var data = {
-//        "name": filterId,
-//        "conditions": {
-//            "glue": "and",
-//            "conditions": [
-//                {
-//                    "glue": "and",
-//                    "conditions": filterConditions
-//                }
-//            ]
-//        },
-//        "type": "persons"
-//    };
-//
-//    function getFilteredPersonsAndCheckAvailable(){
-//        pipeClient.makeRequest('/persons', 'get', null, filterConditions.length > 0 ? {filter_id:filterId} : {}).then(getPersonsResponse => {
-//            if(getPersonsResponse.data){
-//                console.log("getPersonsResponse", getPersonsResponse.data);
-//                pipeClient.makeRequest(`/filters/${filterId}`, 'delete', null, {filter_id:filterId}).then(deleteFilterRes => {
-//                    console.log("deleteFilterRes", deleteFilterRes.data);
-//                });
-//                if(timeMin && timeMax) {
-//                    checkAvailability(getPersonsResponse.data, timeMin, timeMax, 'UTC').then((persons)=>{
-//                        console.log(persons);
-//                        res.send(persons);
-//                    });
-//                }else {
-//                    res.send(getPersonsResponse);
-//                }
-//            }
-//        });
-//    }
-//    //TODO: handle no filter criteria case
-//    if(filterConditions.length > 0){
-//        pipeClient.makeRequest('/filters', 'post').then(createFilterResponse => {
-//            console.log("created filter ", createFilterResponse);
-//            if(createFilterResponse.data){
-//                getFilteredPersonsAndCheckAvailable();
-//            }
-//        });
-//    }else {
-//        getFilteredPersonsAndCheckAvailable();
-//    }
-//
-//}
+
+exports.saveUserPaymentInfo = function(req, res){
+    if(req.body.token){
+        exports.internalUpdatePerson({id: req.params.id, paymentToken: req.body.token}).then((response)=>{
+            res.send(response);
+        });
+    }
+}
 
 

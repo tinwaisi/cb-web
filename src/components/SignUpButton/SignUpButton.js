@@ -8,9 +8,8 @@
  */
 
 import React from 'react';
-import { Button, Collapse, FormGroup, ControlLabel, FormControl, HelpBlock, Grid, Row, Col,
-Modal, Navbar, Nav, NavItem, Well, Alert} from 'react-bootstrap';
-
+import {SelectField, MenuItem, RaisedButton, FlatButton, Dialog, TextField} from 'material-ui';
+const formUtils = require('../../core/formUtils');
 class SignUpButton extends React.Component {
       constructor(props){
               super(props);
@@ -21,10 +20,10 @@ class SignUpButton extends React.Component {
               this.responseGoogle = this.responseGoogle.bind(this);
 
       }
-      handleChange(event) {
+      handleChange(event, val, fieldName ) {
           const target = event.target;
-          const name = target.name;
-          const value = target.type === 'checkbox' ? target.checked : target.value;
+          const name = fieldName || target.name;
+          const value = target.type === 'checkbox' ? target.checked : target.value || val;
           var newForm = _.extend({}, this.state.form);
           newForm[name] = value;
           this.setState({ form: newForm });
@@ -33,22 +32,27 @@ class SignUpButton extends React.Component {
               this.setState({ open: false });
             }
       submitForm(){
-          var form = this.state.form;
-          var signinObj = this;
-          var customFields = {};
-          customFields[Config.PERSON_FIELD_MAP['role']] = form.role;
-          customFields[Config.PERSON_FIELD_MAP['password']] = form.password;
-
-          Config.pipeClient.savePerson(this.state.form.name, this.state.form.email, null, null, null, customFields).then(response => {
-                      console.log(response);
-                      if(response){
-                           sessionStorage.setItem('crewbrick', JSON.stringify(response));
-                           signinObj.props.updateUser(response);
-                           signinObj.close();
-                      }
-
-              });
-
+          const {form} = this.state;
+          fetch('/users', {
+             method: 'POST',
+             headers: {
+               'Accept': 'application/json',
+               'Content-Type': 'application/json',
+             },
+             body: JSON.stringify({
+               form: form
+             }),
+             credentials: 'include'
+         })
+         .then((response) => {
+             return response.json();
+         })
+         .then(responseData=>{
+             sessionStorage.setItem('crewbrick', JSON.stringify(response));
+             responseData.id? history.push('/'): null;
+         }).catch(error=>{
+             this.setState({formError:error});
+         });
       }
       responseGoogle(response){
         this.close();
@@ -66,37 +70,47 @@ class SignUpButton extends React.Component {
         });
       }
       render(){
+
+          const {form, open} = this.state;
+          const actions = [
+              <FlatButton
+                label="Cancel"
+                primary={true}
+                onClick={this.close}
+              />,
+              <RaisedButton
+                label="Sign Up"
+                primary={true}
+                keyboardFocused={true}
+                onClick={this.submitForm.bind(this)}
+              />,
+          ];
           return !this.props.signedIn && (
           <span>
-              <Button bsStyle="info" onClick={ ()=> this.setState({ open: !this.state.open })}>
-                               Sign Up
-                             </Button>
-              <div className="static-modal">
-                  <Modal show={this.state.open} onHide={this.close}>
-                    <Modal.Header>
-                      <Modal.Title>Sign Up to Crewbrick</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                         <FormGroup
-                             controlId="formBasicText">
-                             <ControlLabel>Full Name</ControlLabel>
-                             <FormControl type="text" name="name" value={this.state.form.name} placeholder="Name" onChange={this.handleChange}/>
-                             <ControlLabel>Role in Team</ControlLabel>
-                             <FormControl type="text" name="role" value={this.state.form.role} placeholder="Role" onChange={this.handleChange}/>
-                             <ControlLabel>Email</ControlLabel>
-                             <FormControl type="email" name="email" value={this.state.form.email} placeholder="Email" onChange={this.handleChange}/>
-                             <ControlLabel>Password</ControlLabel>
-                             <FormControl type="password" name="password" value={this.state.form.password} placeholder="Password" onChange={this.handleChange}/>
-                         </FormGroup>
-                    </Modal.Body>
-
-                    <Modal.Footer>
-                      <Button onClick={this.close}>Close</Button>
-                      <Button bsStyle="primary" onClick={()=>this.submitForm()}>Sign Up</Button>
-                    </Modal.Footer>
-
-                  </Modal>
-                </div>
+                <FlatButton label="Sign Up" onClick={ ()=> this.setState({ open: !open })}/>
+                <Dialog
+                    title="Sign Up to Crewbrick"
+                    actions={actions}
+                    modal={false}
+                    open={open}
+                    onRequestClose={this.close}
+                  >
+                    <div>
+                         <div><TextField type="text" name="name" value={form.name} placeholder="Name" onChange={this.handleChange}/></div>
+                         <div>
+                            <SelectField value={form.role} floatingLabelText="Role in team" onChange={(event, index, value) => this.handleChange(event, value, 'role')}>
+                                 <MenuItem value="Cinematographer" primaryText="Cinematographer" />
+                                 <MenuItem value="Audio" primaryText="Audio" />
+                                 <MenuItem value="Lighting" primaryText="Lighting" />
+                                 <MenuItem value="Editor" primaryText="Editor" />
+                            </SelectField>
+                         </div>
+                         <div><TextField type="email" name="email" value={form.email} placeholder="Email" onChange={this.handleChange}/></div>
+                         <div><TextField type="password" name="password" value={form.password} placeholder="Password" onChange={this.handleChange}/></div>
+                         <div><TextField type="text" name="portfolio" value={form.portfolio} placeholder="Link to your portfolio" onChange={this.handleChange}/></div>
+                         <div><TextField type="text" name="city" value={form.city} placeholder="City you work in" onChange={this.handleChange}/></div>
+                    </div>
+                </Dialog>
           </span>
           );
       }

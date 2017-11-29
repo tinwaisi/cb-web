@@ -45,6 +45,10 @@ export const auth = {
     secret: process.env.TWITTER_CONSUMER_SECRET || 'KTZ6cxoKnEakQCeSpZlaUCJWGAlTEBJj0y2EMkUBujA7zWSvaQ',
   },
 
+  stripe: {
+    secret: "pk_test_eWMj9N0SxaeXJxNgDMz7Bz1N"
+  }
+
 
 };
 
@@ -68,7 +72,10 @@ export const dataMap = {
         'salary': 'bfef00b1dbc3f7a4a6067545a603d1b56a8300a1',
         'calendarAccessToken': '56e5af17b63545120da6fd9662c97bef02affdaf',
         'calendarRefreshToken': '1db325fbdb7e4e5ca0773c8d25a87fad7f95f453',
-        'calendarId': 'c970460a0388853c8d45e42c14202a3277f321c9'
+        'calendarId': 'c970460a0388853c8d45e42c14202a3277f321c9',
+        'calendarTimeZone': '799baca8f000b6f45395c2ab9173b02e9b643cb0',
+        'city': '16ca710da3d94aeebe55b7a4394d15398b169256',
+        'portfolio': 'cc4422b02995154f76d6e1312527b16bcabd1908',
     },
     //for creating person filters
     PERSON_FIELD_ID_MAP: {

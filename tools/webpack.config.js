@@ -13,9 +13,12 @@ import AssetsPlugin from 'assets-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import pkg from '../package.json';
 
+
 const isDebug = !process.argv.includes('--release');
 const isVerbose = process.argv.includes('--verbose');
 const isAnalyze = process.argv.includes('--analyze') || process.argv.includes('--analyse');
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+
 
 //
 // Common configuration chunk to be used for both
@@ -30,7 +33,6 @@ const config = {
     publicPath: '/assets/',
     pathinfo: isVerbose,
   },
-
   module: {
     rules: [
       {
@@ -104,6 +106,7 @@ const config = {
           },
         ],
       },
+
       {
         test: /\.md$/,
         loader: path.resolve(__dirname, './lib/markdown-loader.js'),
@@ -127,6 +130,7 @@ const config = {
           limit: 10000,
         },
       },
+
     ],
   },
 
@@ -278,7 +282,8 @@ const serverConfig = {
     (context, request, callback) => {
       const isExternal =
         request.match(/^[@a-z][a-z/.\-0-9]*$/i) &&
-        !request.match(/\.(css|less|scss|sss)$/i) && request !== 'node-pipedrive';
+        !request.match(/\.(css|less|scss|sss)$/i) && request !== 'node-pipedrive' &&
+        !request.match(/react-toolbox/i);
       callback(null, Boolean(isExternal));
     },
   ],

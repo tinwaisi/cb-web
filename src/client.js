@@ -16,6 +16,7 @@ import history from './core/history';
 import App from './components/App';
 import { updateMeta } from './core/DOMUtils';
 import { ErrorReporter, deepForceUpdate, getUserFromSession } from './core/appUtils';
+import store from './store/contextStore';
 
 /* eslint-disable global-require */
 
@@ -90,16 +91,17 @@ let appInstance;
 let currentLocation = history.location;
 let router = require('./core/router').default;
 
+fetch('/user', {credentials: 'include', cache: "no-cache"}).then((res) => {
+    return !res.redirected ?res.json():null;
+}).then(response => {
+    store.dispatch({ type: 'INIT_CURRENT_USER', currentUser: response.message? null : response });
+})
 // Re-render the app when window.location changes
 async function onLocationChange(location, action) {
   // Remember the latest scroll position for the previous location
 
 //  if(location.pathname !== '/'){
-//    fetch('/user', {credentials: 'include', cache: "no-cache"}).then((res) => {
-//    return !res.redirected ?res.json():null;
-//    }).then(response => {
-//          !response || !response.id ? history.push('/') : null;
-//      });
+//    !store.getCurrentUser() ? history.push('/') : null;
 //  }
   scrollPositionsHistory[currentLocation.key] = {
     scrollX: window.pageXOffset,
@@ -188,3 +190,5 @@ if (module.hot) {
     onLocationChange(currentLocation);
   });
 }
+
+Stripe.setPublishableKey('pk_test_eWMj9N0SxaeXJxNgDMz7Bz1N');

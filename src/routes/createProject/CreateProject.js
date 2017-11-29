@@ -1,9 +1,11 @@
 import React  from 'react';
-import { Button, Collapse, ButtonGroup, FormGroup, ControlLabel, FormControl, Grid, Row, Col,
-Modal, Table, Alert} from 'react-bootstrap';
-import Link from '../../components/Link';
 import history from '../../core/history';
 import { getUserFromSession } from '../../core/appUtils';
+import {TextField, RaisedButton, SelectField, MenuItem, DatePicker, FlatButton, FontIcon} from 'material-ui';
+import s from '../../common/common.css';
+import withStyles from 'isomorphic-style-loader/lib/withStyles';
+
+
 
 
 class CreateProject extends React.Component{
@@ -29,6 +31,11 @@ class CreateProject extends React.Component{
         target.type === 'checkbox' ? (target.checked? newForm[name].push(value): newForm[name].splice(newForm[name].indexOf(value), 1)): newForm[name] = value;
         this.setState({ form: newForm });
     }
+    handleDateChange(name, evt, value){
+        var newForm = _.extend({}, this.state.form);
+        newForm[name] = value
+        this.setState({ form: newForm });
+    }
     addPosition(){
         var newForm = _.extend({}, this.state.form);
         newForm.positionsNeeded.push({});
@@ -39,10 +46,16 @@ class CreateProject extends React.Component{
         newForm.positionsNeeded.splice(index, 1);
         this.setState({form: newForm});
     }
-    handlePositionChange(index, event){
+    handlePositionChange(idx, event, index, value){
         var newForm = _.extend({}, this.state.form);
         const target = event.target;
-        target.type === 'select-one' ? newForm.positionsNeeded[index].position = target.value : newForm.positionsNeeded[index].budget = target.value ;
+        newForm.positionsNeeded[idx].position = value;
+        this.setState({form: newForm});
+    }
+    handlePositionBudgetChange(index, event, value){
+        var newForm = _.extend({}, this.state.form);
+        const target = event.target;
+       newForm.positionsNeeded[index].budget = parseInt(value) ;
         this.setState({form: newForm});
     }
 
@@ -79,23 +92,23 @@ class CreateProject extends React.Component{
             return (
                 <div className="row" key={index}>
                     <div className="col-md-4">
-                        <FormControl componentClass="select" placeholder="select" value={position.position} onChange={(evt)=>this.handlePositionChange(index, evt)}>
-                           <option value="" >-Select a position-</option>
-                           <option value="Cinematographer">Cinematographer</option>
-                           <option value="Audio">Audio</option>
-                           <option value="Lighting">Lighting</option>
-                           <option value="Editor">Editor</option>
-                        </FormControl>
+                        <SelectField hintText="Select a position" value={position.position}
+                          onChange={this.handlePositionChange.bind(this, index)}>
+                          <MenuItem value="Cinematographer" primaryText="Cinematographer" />
+                          <MenuItem value="Audio" primaryText="Audio" />
+                          <MenuItem value="Lighting" primaryText="Lighting" />
+                          <MenuItem value="Editor" primaryText="Editor" />
+                        </SelectField>
                     </div>
                     <div className="col-md-3">
-                        <div className="input-group">
-                          <span className="input-group-addon">$</span>
-                          <input type="number" className="form-control" onChange={(evt)=>this.handlePositionChange(index, evt)} placeholder="Budget for person"/>
-                        </div>
+                        <FontIcon iconClassName="muidocs-icon-custom-github"
+                                          href="https://github.com/callemall/material-ui"  />
+
+                        <TextField type="number" hintText="Budget for person" value={position.budget} onChange={this.handlePositionBudgetChange.bind(this, index)} />
                     </div>
                     <div className="col-md-3">
-                        {index === 0 && <Button bsStyle="success" onClick={this.addPosition}>Add Another Position</Button>}
-                        {index > 0 && <Button bsStyle="danger" onClick={()=>this.removePosition(index)}>Remove Position</Button>}
+                        {index === 0 && <RaisedButton onClick={this.addPosition} label="Add Another Position" primary={true} />}
+                        {index > 0 && <FlatButton onClick={this.removePosition.bind(this, index)} label="Remove Position" secondary={true} />}
                     </div>
                     <br/>
                     <br/>
@@ -103,45 +116,56 @@ class CreateProject extends React.Component{
             )
         }, this);
         return(
-        <Grid>
-            <h2>Create Project</h2>
+        <div className={s.pageContainer}>
+
+            <h3>Create Project</h3>
             <br/>
             <form>
-              {this.state.formError && <Alert bsStyle="danger" className="text-center">{this.state.formError}<br/></Alert>}
-                <FormGroup>
-                    <ControlLabel>Project Name</ControlLabel>
-                    <FormControl type="text" name="title" value={this.state.form.title} placeholder="Give a name to your project" onChange={this.handleChange}/>
-                </FormGroup>
-                <FormGroup >
-                      <ControlLabel>Positions of your crew (Add duplicate entries if you need more than 1 person for the position)</ControlLabel>
+              {this.state.formError && <div bsStyle="danger" className="text-center">{this.state.formError}<br/></div>}
+                <div>
+                    <TextField
+                          hintText="Give a name to your project"
+                          floatingLabelText="Project Name"
+                          value={this.state.form.title}
+                          onChange={this.handleChange}
+                        />
+
+                </div>
+                <div >
+                      <label>Positions of your crew (Add duplicate entries if you need more than 1 person for the position)</label>
                        <br/>
                       {positionList}
 
-                </FormGroup>
-                <FormGroup>
-                    <ControlLabel>Filming Date(s)</ControlLabel>
-                    <FormControl type="text" name="filmingDates" value={this.state.form.filmingDates} placeholder="Dates for the shooting to happen." onChange={this.handleChange}/>
-                </FormGroup>
-                <FormGroup>
-                    <ControlLabel>Final Deadline (format dd-mm-yyyy)</ControlLabel>
-                    <FormControl type="text" name="finalDeadline" value={this.state.form.finalDeadline} placeholder="Final Deadline as a reference for your crew." onChange={this.handleChange}/>
-                </FormGroup>
-                <FormGroup controlId="formControlsSelect">
-                      <ControlLabel>Method to transfer files (for the crew to know what to expect)</ControlLabel>
-                      <FormControl componentClass="select" placeholder="select" onChange={this.handleChange}>
-                        <option value="Provide SD card">Provide Own SD card</option>
-                        <option value="Upload to Web">Upload to Web</option>
-                      </FormControl>
-                </FormGroup>
-                <FormGroup>
-                    <ControlLabel>Description</ControlLabel>
-                    <FormControl componentClass="textarea" name="description" value={this.state.form.description} placeholder="Description for the crew to understand your project details." onChange={this.handleChange}/>
-                </FormGroup>
-                <Link buttonClass="btn" to="/myProjects">Cancel</Link>&nbsp;
-                <Button bsStyle="primary" onClick={this.createProject}>Create</Button>
+                </div>
+                <div>
+                     <TextField
+                      hintText="Dates for the shooting to happen."
+                      floatingLabelText="Filming Date(s)"
+                      value={this.state.form.filmingDates}
+                      onChange={this.handleChange}
+                     />
+                </div>
+                <div>
+                    <DatePicker minDate={new Date()} floatingLabelText="Final Deadline" hintText="Deadline of the project" value={this.state.form.finalDeadline} onChange={this.handleDateChange.bind(this, 'finalDeadline')}/>
+                </div>
+                <div>
+                      <SelectField floatingLabelText="Method to transfer files" onChange={this.handleChange}>
+                        <MenuItem value="Provide SD card" primaryText="Provide SD card" />
+                        <MenuItem value="Upload to Web" primaryText="Upload to Web" />
+                      </SelectField>
+                </div>
+                <div>
+                    <TextField floatingLabelText="Description" value={this.state.form.description}
+                      hintText="Description for the crew to understand your project details." multiLine={true} rows={5} fullWidth={true} onChange={this.handleChange}
+                    />
+                </div>
+                <FlatButton label="Cancel" href="/myProjects"  />
+
+                <RaisedButton label="Create" primary={true} onClick={this.createProject} />
+
             </form>
-        </Grid>
+        </div>
         );
     }
 }
-export default CreateProject;
+export default withStyles(s)(CreateProject);

@@ -10,18 +10,17 @@
 @import '../variables.css';
 
 :root {
-  --brand-color: #61dafb;
+  --brand-color: #fff;
 }
 
 .root {
-  background: #373277;
+  background: #ffd735;
   color: #fff;
 }
 
 .container {
-  margin: 0 auto;
+  margin: 0 140px;
   padding: 20px 0;
-  max-width: var(--max-content-width);
 }
 
 .brand {
@@ -56,4 +55,29 @@
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.25em;
   margin: 0;
+}
+
+.materialIcons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
 }

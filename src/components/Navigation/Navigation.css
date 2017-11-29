@@ -10,6 +10,7 @@
 .root {
   float: right;
   margin: 6px 0 0;
+  display: flex;
 }
 
 .link {
@@ -40,7 +41,6 @@
 .highlight:hover {
   background: rgba(0, 0, 0, 0.3);
 }
-
-.spacer {
-  color: rgba(255, 255, 255, 0.3);
+.flexDiv{
+  display: flex;
 }

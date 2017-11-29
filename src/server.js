@@ -112,6 +112,9 @@ app.delete('/deals/:id', crm.deleteDeal);
 app.post('/login', crm.loginUser);
 app.post('/deals', crm.createDeal);
 app.post('/deals/:id/participants', crm.addParticipantsToDeal);
+app.post('/deals/:id/respond', crm.respondToProject);
+app.post('/users/:id/paymentInfo', crm.saveUserPaymentInfo);
+app.post('/users', crm.createPerson);
 
 //Calendar API
 app.get('/users/:id/calendar', googleCalendar.getUserEvents);

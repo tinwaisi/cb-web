@@ -33,39 +33,81 @@ exports.getUserEvents = function(req, res){
     console.log('getUserCalendar');
     console.log(req.session.id);
     console.log(req.user);
-    var accessToken = req.session.googleToken || (req.user?CryptoJS.AES.decrypt(req.user[dataMap.PERSON_FIELD_MAP.calendarAccessToken], config.calendarEncryptSecret).toString(CryptoJS.enc.Utf8):null);
+    if(req.user && !req.user[dataMap.PERSON_FIELD_MAP.calendarAccessToken]){
+        console.log("Account is not connected to Google Calendar");
+        res.status(500).send("Account is not connected to Google Calendar");
+    }
+    var accessToken = req.user?CryptoJS.AES.decrypt(req.user[dataMap.PERSON_FIELD_MAP.calendarAccessToken], config.calendarEncryptSecret).toString(CryptoJS.enc.Utf8):null;
     console.log("google calendar token", accessToken);
     console.log("user get ", accessToken);
+    var processData = (data, accessToken)=>{
+        for (var i=0; i<data.items.length; i++){
+            console.log(data.items[i].id);
+            if(data.items[i].primary){
+                var id = data.items[i].id;
+                var timeZone = data.items[i].timeZone;
+                if(!req.user[dataMap.PERSON_FIELD_MAP.calendarId]){
+                    console.log(req.user);
+                    var person = {id:req.user.id};
+                    person[dataMap.PERSON_FIELD_MAP.calendarId] = id;
+                    person[dataMap.PERSON_FIELD_MAP.calendarTimeZone] = id;
+                    crm.internalUpdatePerson(person).then((res)=>{
+                        gcal(accessToken).events.list(data.items[i].id, (err, response)=>{
+                            req.session.calendarId = response.calendarId = id;
+                            return res.send(response);
+                        });
+                    });
+                } else {
+                    gcal(accessToken).events.list(data.items[i].id, (err, response)=>{
+                        req.session.calendarId = response.calendarId = id;
+                        return res.send(response);
+                    });
+                }
+
+                break;
+            }
+        }
+    }
     if(accessToken){
         gcal(accessToken).calendarList.list(function(err, data) {
                 if(err){
                     console.log('getcalendarEvents', err);
-                    return res.send(500,err);
-                }else {
-                    for (var i=0; i<data.items.length; i++){
-                        console.log(data.items[i].id);
-                        if(data.items[i].primary){
-                            var id = data.items[i].id;
-                            if(!req.user[dataMap.PERSON_FIELD_MAP.calendarId]){
-                                console.log(req.user);
-                                var person = {id:req.user.id};
-                                person[dataMap.PERSON_FIELD_MAP.calendarId] = id;
-                                crm.internalUpdatePerson(person).then((res)=>{
-                                    gcal(accessToken).events.list(data.items[i].id, (err, response)=>{
-                                        req.session.calendarId = response.calendarId = id;
-                                        return res.send(response);
+                    if(err){
+                        //Refresh token
+                        var refreshToken = req.user?CryptoJS.AES.decrypt(req.user[dataMap.PERSON_FIELD_MAP.calendarRefreshToken], config.calendarEncryptSecret).toString(CryptoJS.enc.Utf8):null;
+                        console.log('refreshtoken', refreshToken);
+                        oauth2Client.setCredentials({
+                          access_token: accessToken,
+                          refresh_token: refreshToken
+                        });
+                        console.log(refreshToken);
+                        oauth2Client.refreshAccessToken(function(refreshErr, tokens) {
+
+                            console.log('refreshed tokens', refreshErr);
+                            console.log('refreshed tokens', tokens);
+                            if(tokens.access_token){
+                                var person = {id: req.user.id};
+                                person[dataMap.PERSON_FIELD_MAP.calendarAccessToken] = CryptoJS.AES.encrypt(tokens.access_token, config.calendarEncryptSecret).toString();
+                                crm.internalUpdatePerson(person).then(()=>{
+                                    gcal(tokens.accessToken).calendarList.list((retryErr, retryData)=>{
+                                        if(err){
+                                            console.log("still failed", retryErr);
+                                            res.status(500).send(retryErr);
+                                        }else{
+                                            console.log("success this time", retryData);
+                                            processData(retryData, tokens.accessToken);
+
+                                        }
                                     });
                                 });
-                            } else {
-                                gcal(accessToken).events.list(data.items[i].id, (err, response)=>{
-                                    req.session.calendarId = response.calendarId = id;
-                                    return res.send(response);
-                                });
-                            }
 
-                            break;
-                        }
+                            }else {
+                                reject("Failed to refresh token.")
+                            }
+                        });
                     }
+                }else {
+                    processData(data, accessToken);
                 }
             });
     } else {
@@ -163,6 +205,24 @@ exports.internalCheckFreeBusy = function(encryptedAccessToken, timeMin, timeMax,
            }
         }
     );
+}
 
+exports.internalMarkToUserCalendar = function(encryptedAccessToken, encryptedRefreshToken, calendarId, start, end, title, description){
+    var eventObj = {
+        start: { date: start},
+        end: {date: end},
+        summary: title,
+        description: description
+    };
+    var accessToken = CryptoJS.AES.decrypt(encryptedAccessToken, config.calendarEncryptSecret).toString(CryptoJS.enc.Utf8);
+    return new Promise((resolve, reject) => {
+         gcal(accessToken).events.insert(calendarId, eventObj, {sendNotifications: true}, (err, insertedEvent)=>{
+             if(err){
+                 reject(err);
+             }else {
+                 resolve(insertedEvent);
+             }
+         });
+    });
 
 }

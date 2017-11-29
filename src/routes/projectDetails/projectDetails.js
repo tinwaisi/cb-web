@@ -1,16 +1,17 @@
 import React from 'react';
-import { Button, Collapse, FormGroup, ControlLabel, FormControl, Grid, Row, Col,
-Modal, Table, Alert} from 'react-bootstrap';
+import {Modal, Table, Alert, Grid} from 'react-bootstrap';
 import { getUserFromSession } from '../../core/appUtils';
 import PersonCard from '../../components/PersonCard';
+import StatusBadge from '../../components/StatusBadge';
 import {dataMap} from '../../core/appConfig';
 import _ from 'lodash';
 import history from '../../core/history';
+import {RaisedButton} from 'material-ui';
 
 class ProjectDetails extends React.Component{
     constructor(props){
             super(props);
-            this.state = {project:{}, showResponsePopup: false, responseAccept: null, crewMembers: [], canRespond: false, selfPosition: null};
+            this.state = {project:{}, showResponsePopup: false, responseAccept: null, crewMembers: [], canRespond: false, selfPosition: null, status: null};
             this.closeResponsePopup = this.closeResponsePopup.bind(this);
             this.openResponsePopup = this.openResponsePopup.bind(this);
             this.personMap = {};
@@ -55,7 +56,7 @@ class ProjectDetails extends React.Component{
     }
     submitResponse(isAccept){
         fetch(`/deals/${this.state.project.id}/respond`, {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                   'Accept': 'application/json',
                   'Content-Type': 'application/json',
@@ -68,7 +69,7 @@ class ProjectDetails extends React.Component{
             .then((res) => {
                 return res.json();
             }).then((response)=>{
-                this.setState({canRespond: false});
+                this.setState({canRespond: false, status:_.findKey(dataMap.PROJECT_STAGES, project.stage_id)});
         });
 
     }
@@ -76,9 +77,11 @@ class ProjectDetails extends React.Component{
         var crewMembers = this.state.crewMembers.map((position, index)=>{
             return position.person ? (<div className="col-md-3" key={index}>{position.position}: <PersonCard person={position.person}/></div>): null;
             });
+        const {project, status} = this.state;
         return (
-         <Grid>
-            <h3>{this.state.project.title}</h3>
+         <Grid container>
+            <h3>{project.title}  </h3>
+            <StatusBadge text={status} type={status}/>
             <br/>
             <div><b>Type</b>&nbsp;&nbsp;<span>Wedding</span></div>
             <div><b>Filming Date(s)</b>&nbsp;&nbsp;<span>{this.state.project[dataMap.PROJECT_FIELD_MAP.filmingDates]}</span></div>
@@ -93,8 +96,8 @@ class ProjectDetails extends React.Component{
             <div className="row">{crewMembers.length > 0 && crewMembers}</div>
             <br/>
             {this.state.canRespond && <div>
-                <Button onClick={()=>{this.openResponsePopup(true)}}  bsStyle="success">Accept Project</Button>&nbsp;
-                <Button onClick={()=>{this.openResponsePopup(false)}}  bsStyle="danger">Decline</Button>
+                <RaisedButton onClick={()=>{this.openResponsePopup(true)}}  bsStyle="success">Accept Project</RaisedButton>&nbsp;
+                <RaisedButton onClick={()=>{this.openResponsePopup(false)}}  bsStyle="danger">Decline</RaisedButton>
             </div>}
             <Modal show={this.state.showResponsePopup} onHide={this.close}>
               <Modal.Header>
@@ -111,12 +114,12 @@ class ProjectDetails extends React.Component{
               </Modal.Body>
 
               <Modal.Footer>
-                <Button onClick={this.closeResponsePopup}>Close</Button>
+                <RaisedButton onClick={this.closeResponsePopup}>Close</RaisedButton>
                 { this.state.responseAccept === true &&
-                    <Button bsStyle="success" onClick={()=>this.submitResponse()}>Accept Project</Button>
+                    <RaisedButton bsStyle="success" onClick={()=>this.submitResponse(true)}>Accept Project</RaisedButton>
                 }
                 { this.state.responseAccept === false &&
-                    <Button bsStyle="danger" onClick={()=>this.submitResponse()}>Decline Project</Button>
+                    <RaisedButton bsStyle="danger" onClick={()=>this.submitResponse(false)}>Decline Project</RaisedButton>
                 }
 
               </Modal.Footer>

@@ -11,13 +11,11 @@ import React, { PropTypes } from 'react';
 import cx from 'classnames';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './Navigation.css';
-import Link from '../Link';
 import LoginButton from '../LoginButton';
 import SignUpButton from '../SignUpButton';
 import { getUserFromSession, removeUserFromSession, setUserToSession } from '../../core/appUtils';
 import { Button} from 'react-bootstrap';
-
-
+import store from '../../store/contextStore';
 
 class Navigation extends React.Component {
   contextTypes: {
@@ -28,30 +26,21 @@ class Navigation extends React.Component {
     this.state = {currentUser: null};
     this.signout = removeUserFromSession.bind(this);
   }
-  componentDidMount(){
-    fetch('/user', {credentials: 'include'})
-    .then((res) => {
-        return res ?res.json():null;}).then(response => {
-        response && response.user ? setUserToSession(response.user) : null;
-        this.setState({currentUser: response.user});
-    });
-  }
   componentWillMount(){
     (!this.state.currentUser && typeof localStorage !== 'undefined') ? this.setState({currentUser: getUserFromSession()}): null;
   }
   render() {
+    const currentUser = store.getCurrentUser();
     return (
       <div className={s.root} role="navigation">
-        <Link className={s.link} to="/myProjects">My Projects</Link>
-        <Link className={s.link} to="/myCalendar">My Calendar</Link>
-        <Link className={s.link} to="/contact">Contact</Link>
-        <span className={s.spacer}> | </span>
-        <span className={s.spacer}></span>
-        {!this.state.currentUser && <span><span className="pull-right"><LoginButton/></span>
-        <span className="pull-right">&nbsp;&nbsp;</span>
-        <span className="pull-right"><SignUpButton/></span>&nbsp;&nbsp;</span>}
+        <a className={s.link} href="/myProjects">My Projects</a>
+        <a className={s.link} href="/myCalendar">My Calendar</a>
+        {!currentUser && <div className={s.flexDiv}>
+            <span className="pull-right"><LoginButton/></span>
+            <span className="pull-right"><SignUpButton/></span>
+        </div>}
 
-        <span className="pull-right">{this.state.currentUser && <a href="/signout"><Button className="btn" onClick={this.signout}>Sign out</Button></a>}  </span>
+        <span className="pull-right">{currentUser && <a href="/signout"><Button className="btn" onClick={this.signout}>Sign out</Button></a>}  </span>
       </div>
     );
   }

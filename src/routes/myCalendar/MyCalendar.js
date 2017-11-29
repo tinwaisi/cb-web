@@ -1,13 +1,18 @@
 import React from 'react';
-import { Button, Collapse, FormGroup, ControlLabel, FormControl, Grid, Row, Col,
-Modal, Table, Alert} from 'react-bootstrap';
 import { getUserFromSession } from '../../core/appUtils';
 import {dataMap, stringConsts} from '../../core/appConfig';
 import BigCalendar from 'react-big-calendar';
 import moment from 'moment';
+import s from './common.css';
+import _ from 'lodash';
+import {Snackbar} from 'material-ui';
+
 
 
 class MyCalendar extends React.Component{
+    state = {
+        alertMessage: ""
+    }
     constructor(props){
         super();
         this.state = {eventList: []};
@@ -23,8 +28,18 @@ class MyCalendar extends React.Component{
     componentWillMount(){
         (!this.state.currentUser && typeof localStorage !== 'undefined') ? this.setState({currentUser: getUserFromSession()}): null;
     }
+
+    showAlert(alertMessage){
+        this.setState({alertMessage});
+    }
     updateCalendar(){
-        fetch(`/users/${this.state.currentUser.id}/calendar`, {credentials: 'include'}).then((res) => {return res?res.json():null;}).then(response => {
+        fetch(`/users/${this.state.currentUser.id}/calendar`, {credentials: 'include'}).then(
+        (res) =>{
+            if(res.ok){
+                return res.json();
+            }
+            return this.showAlert('Cannot Get User Calendar');
+        }).then(response => {
             console.log(response);
             var events = [];
             if(response && response.items){
@@ -39,7 +54,7 @@ class MyCalendar extends React.Component{
                 }
                 this.setState({eventList:events});
             }
-        });
+        })
     }
     createCrewbrickCalendar(){
         fetch(`/users/${this.state.currentUser.id}/calendar`, {
@@ -61,20 +76,29 @@ class MyCalendar extends React.Component{
         alert(event.title);
     }
     render(){
-
+        const {alertMessage} = this.state;
         return(
             <div>
-                <Grid>
-                    <h2>My Calendar
+                <div>
+                    <div className={s.flexRow}>
+                        <h2>My Calendar</h2>
                         <div className="pull-right">
                             <a href="/login/google"><button><h4>Import my Google Calendar</h4></button></a>
                         </div>
-                    </h2>
+                    </div>
                     <br/>
                     <BigCalendar {...this.props} events={this.state.eventList} defaultDate={new Date()}
                            onSelectEvent={this.handleSelectEvent}
                     />
-                </Grid>
+                    {alertMessage &&
+                    <Snackbar
+                      open={!_.isEmpty(alertMessage)}
+                      message={alertMessage}
+                      autoHideDuration={4000}
+                      onRequestClose={()=>this.setState({alertMessage:""})}
+                    />
+                    }
+                </div>
 
             </div>
 

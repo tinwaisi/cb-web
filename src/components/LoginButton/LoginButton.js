@@ -12,6 +12,9 @@ import { Button, Collapse, FormGroup, ControlLabel, FormControl, HelpBlock, Grid
 Modal, Navbar, Nav, NavItem, Well, Alert} from 'react-bootstrap';
 import history from '../../core/history';
 import { setUserToSession } from '../../core/appUtils';
+import store from '../../store/contextStore';
+import {RaisedButton, Dialog, TextField, FlatButton} from 'material-ui';
+
 
 
 class LoginButton extends React.Component {
@@ -62,6 +65,7 @@ class LoginButton extends React.Component {
           })
           .then((res) => { return res.json(); })
           .then(function(responseData){
+                store.dispatch({ type: 'INIT_CURRENT_USER', currentUser:responseData });
                 setUserToSession(responseData);
                 history.push('/myProjects');
                 _this.close();
@@ -88,32 +92,37 @@ class LoginButton extends React.Component {
         });
       }
       render(){
+          const actions = [
+                <FlatButton
+                  label="Cancel"
+                  primary={true}
+                  onClick={this.close}
+                />,
+                <RaisedButton
+                  label="Login"
+                  primary={true}
+                  keyboardFocused={true}
+                  onClick={this.processLogin.bind(this)}
+                />,
+          ];
           return !this.props.signedIn && (
                 <span>
-                     <Button bsStyle="primary" onClick={ ()=> this.setState({ showModal: !this.state.showModal, formError:""})} >Login</Button>
+                     <RaisedButton label="Login" onClick={ ()=> this.setState({ showModal: !this.state.showModal, formError:""})} primary={true} />
                       <div className="static-modal">
-                         <Modal show={this.state.showModal} onHide={this.close}>
-                           <Modal.Header>
-                             <Modal.Title>Modal title</Modal.Title>
-                           </Modal.Header>
+                         <Dialog
+                             title="Login to Crewbrick"
+                             actions={actions}
+                             modal={false}
+                             open={this.state.showModal}
+                             onRequestClose={this.close}
+                           >
+                               {this.state.formError && <Alert bsStyle="danger" className="text-center">{this.state.formError}<br/></Alert>}
 
-                           <Modal.Body>
-                                {this.state.formError && <Alert bsStyle="danger" className="text-center">{this.state.formError}<br/></Alert>}
-                                <FormGroup
-                                  controlId="formBasicText">
-                                  <ControlLabel>Email</ControlLabel>
-                                  <FormControl type="email" name="email" value={this.state.form.email} placeholder="Email" onChange={this.handleChange}/>
-                                  <ControlLabel>Password</ControlLabel>
-                                  <FormControl type="password" name="password" value={this.state.form.password} placeholder="Password" onChange={this.handleChange}/>
-                                </FormGroup>
-                           </Modal.Body>
-
-                           <Modal.Footer>
-                             <Button onClick={this.close}>Close</Button>
-                             <Button bsStyle="primary" type="submit" onClick={this.processLogin}>Login</Button>
-                           </Modal.Footer>
-
-                         </Modal>
+                             <div>
+                                  <div><TextField type="email" name="email" value={this.state.form.email} placeholder="Email" onChange={this.handleChange}/></div>
+                                  <div><TextField type="password" name="password" value={this.state.form.password} placeholder="password" onChange={this.handleChange}/></div>
+                             </div>
+                         </Dialog>
                        </div>
                  </span>
           );

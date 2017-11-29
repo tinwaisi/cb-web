@@ -8,6 +8,9 @@
  */
 
 import React, { PropTypes } from 'react';
+import injectTapEventPlugin from 'react-tap-event-plugin';
+injectTapEventPlugin();
+
 
 
 const ContextType = {

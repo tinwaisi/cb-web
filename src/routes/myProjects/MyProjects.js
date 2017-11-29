@@ -1,10 +1,9 @@
 import React from 'react';
-import { Button, Collapse, FormGroup, ControlLabel, FormControl, Grid, Row, Col,
-Modal, Table, Alert} from 'react-bootstrap';
 import { getUserFromSession } from '../../core/appUtils';
-import Link from '../../components/Link';
 import {dataMap} from '../../config';
-
+import {RaisedButton, FlatButton, Table, FontIcon, TableBody, TableHeader, FloatingActionButton} from 'material-ui';
+import withStyles from 'isomorphic-style-loader/lib/withStyles';
+import s from '../../common/common.css';
 
 
 class MyProjects extends React.Component{
@@ -67,45 +66,79 @@ class MyProjects extends React.Component{
         });
     }
     render(){
-
-        var projects = this.state.projectList.map((item, index) => {
-                    return (<tr key={item.id}>
-                        <td><Link to={'/projectDetails/'+item.id}>{item.title}</Link></td>
+        let startedProjects = [];
+        let completedProjects = [];
+        var projects = this.state.projectList.forEach((item, index) => {
+                    item.stage_id < 10 ?
+                    startedProjects.push(<tr key={item.id}>
+                        <td><a href={`/projectDetails/${item.id}`}>{item.title}</a></td>
                         <td>{item[dataMap.PROJECT_FIELD_MAP.filmingDates]}</td>
                         <td>{item[dataMap.PROJECT_FIELD_MAP.finalDeadline]}</td>
                         <td>
-                            {item.stage_id === 6 && <span><Link to={'/pickCrew/'+item.id}>Pick the Crew</Link>&nbsp;
-                            <Button className="btn-warning" onClick={()=>this.deleteProject(item.id)}>Delete Project</Button></span>}
+                            {item.stage_id === 6 && <span><RaisedButton href={`/pickCrew/${item.id}`} label="Pick the Crew"></RaisedButton>&nbsp;
+                            <FlatButton className="btn-warning" onClick={()=>this.deleteProject(item.id)}>Delete Project</FlatButton></span>}
                             {item.stage_id === 8 && (item.person_id.value === this.state.currentUser.id) && <span>Pending</span>}
                             {item.stage_id === 8 && (item.person_id.value !== this.state.currentUser.id) && (!item.accepted) && <span><Button onClick={()=>this.responseToInvite(true, item)}>Accept</Button>
-                            &nbsp;<Button onClick={()=>this.responseToInvite(false, item)}>Decline</Button></span>}
+                            &nbsp;<RaisedButton onClick={()=>this.responseToInvite(false, item)}>Decline</RaisedButton></span>}
                             {item.stage_id === 8 && (item.person_id.value !== this.state.currentUser.id) && (item.accepted) && <span>Accepted (Waiting for other crew members)</span>}
 
                             {item.stage_id === 9 && <span>Confirmed</span>}
                             {item.stage_id === 10 && <span>Complete</span>}
                         </td>
-                    </tr>)
+                    </tr>) :
+                    completedProjects.push(<tr key={item.id}>
+                          <td><a href={`/projectDetails/${item.id}`}>{item.title}</a></td>
+                          <td>{item[dataMap.PROJECT_FIELD_MAP.filmingDates]}</td>
+                          <td>{item[dataMap.PROJECT_FIELD_MAP.finalDeadline]}</td>
+                          <td>
+                              {item.stage_id === 10 && <span>Complete</span>}
+                          </td>
+                     </tr>)
+
                 });
 
         return(
-            <Grid>
-            <h2>My Projects <span className="pull-right"><Link buttonClass="btn-success" to="/createProject">Create Project</Link></span> </h2>
-            <br/>
-             <Table responsive striped>
-                <thead>
-                  <tr>
-                    <th>Project Name</th>
-                    <th>Filming Dates</th>
-                    <th>Final Deadline</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                    {projects}
-                </tbody>
-              </Table>
-            </Grid>
+            <div className={s.pageContainer}>
+                <div className={s.flexRow}>
+                    <h3>My Projects</h3>
+                    <FloatingActionButton href="/createProject">
+                        <i className={s.materialIcons}>add</i>
+                    </FloatingActionButton>
+                </div>
+                <br/>
+                 <Table responsive striped>
+                    <TableHeader>
+                      <tr>
+                        <th>Project Name</th>
+                        <th>Filming Dates</th>
+                        <th>Final Deadline</th>
+                        <th>Status</th>
+                      </tr>
+                    </TableHeader>
+                    <TableBody>
+                        {startedProjects}
+                    </TableBody>
+                  </Table>
+                  {completedProjects.length > 0 &&
+                    <div>
+                        <h3>Completed Projects</h3>
+                        <Table responsive striped>
+                            <TableBody>
+                              <tr>
+                                <th>Project Name</th>
+                                <th>Filming Dates</th>
+                                <th>Final Deadline</th>
+                                <th>Status</th>
+                              </tr>
+                            </TableBody>
+                            <TableBody>
+                                {completedProjects}
+                            </TableBody>
+                        </Table>
+                    </div>
+                  }
+            </div>
         );
     }
 }
-export default MyProjects;
+export default withStyles(s)(MyProjects);

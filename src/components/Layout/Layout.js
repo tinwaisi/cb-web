@@ -13,6 +13,8 @@ import s from './Layout.css';
 import Header from '../Header';
 import Feedback from '../Feedback';
 import Footer from '../Footer';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
 
 class Layout extends React.Component {
   static propTypes = {
@@ -24,10 +26,12 @@ class Layout extends React.Component {
 
   render() {
     return (
+    <MuiThemeProvider>
       <div>
         <Header />
         {this.props.children}
       </div>
+      </MuiThemeProvider>
     );
   }
 }
