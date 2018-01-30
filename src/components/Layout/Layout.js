@@ -14,6 +14,7 @@ import Header from '../Header';
 import Feedback from '../Feedback';
 import Footer from '../Footer';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import store from '../../store/contextStore';
 
 
 class Layout extends React.Component {
@@ -24,11 +25,17 @@ class Layout extends React.Component {
         currentUser: React.PropTypes.object
     }
 
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      children: nextProps.children
+    });
+  }
+
   render() {
     return (
     <MuiThemeProvider>
       <div>
-        <Header />
+        <Header store={store}/>
         {this.props.children}
       </div>
       </MuiThemeProvider>

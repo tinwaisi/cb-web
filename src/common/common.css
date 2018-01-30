@@ -1,9 +1,13 @@
+@import "react-toolbox/lib/colors";
 @import '../components/variables.css';
-
-.flexRow {
+.flexRowSpread {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+.flexRow {
+    display: flex;
+    align-items: center;
 }
 .materialIcons {
   font-family: 'Material Icons';
@@ -25,3 +29,7 @@
 .pageContainer{
     padding: 2rem;
 }
+.iconButton i{
+    color: white;
+}
+

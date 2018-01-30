@@ -22,9 +22,9 @@ exports.getUserCalendar = function(req, res){
       console.log("google calendar token", accessToken);
       gcal(accessToken).calendarList.list(function(err, data) {
         if(err){
-            return res.send(500,err);
+            return res.json(500,err);
         }
-        return res.send(data);
+        return res.json(data);
       });
 }
 
@@ -35,7 +35,7 @@ exports.getUserEvents = function(req, res){
     console.log(req.user);
     if(req.user && !req.user[dataMap.PERSON_FIELD_MAP.calendarAccessToken]){
         console.log("Account is not connected to Google Calendar");
-        res.status(500).send("Account is not connected to Google Calendar");
+        res.status(500).json("Account is not connected to Google Calendar");
     }
     var accessToken = req.user?CryptoJS.AES.decrypt(req.user[dataMap.PERSON_FIELD_MAP.calendarAccessToken], config.calendarEncryptSecret).toString(CryptoJS.enc.Utf8):null;
     console.log("google calendar token", accessToken);
@@ -51,16 +51,16 @@ exports.getUserEvents = function(req, res){
                     var person = {id:req.user.id};
                     person[dataMap.PERSON_FIELD_MAP.calendarId] = id;
                     person[dataMap.PERSON_FIELD_MAP.calendarTimeZone] = id;
-                    crm.internalUpdatePerson(person).then((res)=>{
+                    crm.internalUpdatePerson(person).then(()=>{
                         gcal(accessToken).events.list(data.items[i].id, (err, response)=>{
                             req.session.calendarId = response.calendarId = id;
-                            return res.send(response);
+                            return res.json(response);
                         });
                     });
                 } else {
                     gcal(accessToken).events.list(data.items[i].id, (err, response)=>{
                         req.session.calendarId = response.calendarId = id;
-                        return res.send(response);
+                        return res.json(response);
                     });
                 }
 
@@ -92,7 +92,7 @@ exports.getUserEvents = function(req, res){
                                     gcal(tokens.accessToken).calendarList.list((retryErr, retryData)=>{
                                         if(err){
                                             console.log("still failed", retryErr);
-                                            res.status(500).send(retryErr);
+                                            res.status(500).json(retryErr);
                                         }else{
                                             console.log("success this time", retryData);
                                             processData(retryData, tokens.accessToken);
@@ -111,7 +111,7 @@ exports.getUserEvents = function(req, res){
                 }
             });
     } else {
-        return res.send(500,"Cannot get calendar events");
+        return res.json(500,"Cannot get calendar events");
     }
 }
 
@@ -120,7 +120,7 @@ exports.createCalendarEvent = function(req, res){
          var event = {};
          gcal(accessToken).events.insert(calendarId, (err, response)=>{
              req.session.calendarId = response.calendarId = id;
-             return res.send(response);
+             return res.json(response);
          });
     };
     if(req.session.calendarId){
@@ -148,10 +148,10 @@ exports.createCrewbrickCalendar = function(req, res){
 //        TODO: get calendar list first to check if already created
         gcal(accessToken).calendars.insert({summary: "Crewbrick Projects"}, (err, data)=>{
             if(err){
-                return res.send(500,err);
+                return res.json(500,err);
             }else {
                 req.session.calendarId = data.id;
-                return res.send(data);
+                return res.json(data);
             }
         });
     }
