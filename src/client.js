@@ -12,11 +12,12 @@ import ReactDOM from 'react-dom';
 import FastClick from 'fastclick';
 import queryString from 'query-string';
 import { createPath } from 'history/PathUtils';
-import history from './core/history';
+import createBrowserHistory from 'history/createBrowserHistory';
 import App from './components/App';
 import { updateMeta } from './core/DOMUtils';
 import { ErrorReporter, deepForceUpdate, getUserFromSession } from './core/appUtils';
 import store from './store/contextStore';
+const history = createBrowserHistory();
 
 /* eslint-disable global-require */
 
@@ -100,9 +101,9 @@ fetch('/user', {credentials: 'include', cache: "no-cache"}).then((res) => {
 async function onLocationChange(location, action) {
   // Remember the latest scroll position for the previous location
 
-//  if(location.pathname !== '/'){
-//    !store.getCurrentUser() ? history.push('/') : null;
-//  }
+ if(location.pathname !== '/'){
+   !store.getCurrentUser() ? window.location = '/' : null;
+ }
   scrollPositionsHistory[currentLocation.key] = {
     scrollX: window.pageXOffset,
     scrollY: window.pageYOffset,

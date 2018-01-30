@@ -2,7 +2,7 @@ import React  from 'react';
 import history from '../../core/history';
 import { getUserFromSession } from '../../core/appUtils';
 import {TextField, RaisedButton, SelectField, MenuItem, DatePicker, FlatButton, FontIcon} from 'material-ui';
-import s from '../../common/common.css';
+import s from './CreateProject.css';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 
 
@@ -58,6 +58,9 @@ class CreateProject extends React.Component{
        newForm.positionsNeeded[index].budget = parseInt(value) ;
         this.setState({form: newForm});
     }
+    handleTransferFileMethodChagen(event, index, value){
+      this.setState({form: {...this.state.form, transferFileMethod:value}});
+    }
 
     createProject(){
         var user = JSON.parse(sessionStorage.getItem("crewbrick"));
@@ -90,8 +93,8 @@ class CreateProject extends React.Component{
     render(){
         var positionList = this.state.form.positionsNeeded.map((position, index)=>{
             return (
-                <div className="row" key={index}>
-                    <div className="col-md-4">
+                <div className={s.flexRow} key={index}>
+                    <div className={s.roleItem}>
                         <SelectField hintText="Select a position" value={position.position}
                           onChange={this.handlePositionChange.bind(this, index)}>
                           <MenuItem value="Cinematographer" primaryText="Cinematographer" />
@@ -100,15 +103,22 @@ class CreateProject extends React.Component{
                           <MenuItem value="Editor" primaryText="Editor" />
                         </SelectField>
                     </div>
-                    <div className="col-md-3">
+                    <div className={s.roleItem}>
                         <FontIcon iconClassName="muidocs-icon-custom-github"
                                           href="https://github.com/callemall/material-ui"  />
 
                         <TextField type="number" hintText="Budget for person" value={position.budget} onChange={this.handlePositionBudgetChange.bind(this, index)} />
                     </div>
-                    <div className="col-md-3">
-                        {index === 0 && <RaisedButton onClick={this.addPosition} label="Add Another Position" primary={true} />}
-                        {index > 0 && <FlatButton onClick={this.removePosition.bind(this, index)} label="Remove Position" secondary={true} />}
+                    <div className={s.roleItem}>
+                        {index === 0 &&
+                        <RaisedButton className={s.iconButton} onClick={this.addPosition}  primary={true}>
+                          <i className={s.materialIcons}>person_add</i>
+                        </RaisedButton>}
+                        {index > 0 &&
+                        <FlatButton onClick={this.removePosition.bind(this, index)} secondary={true} >
+                          <i className={s.materialIcons}>hightlight_off</i>
+                        </FlatButton>
+                        }
                     </div>
                     <br/>
                     <br/>
@@ -117,21 +127,21 @@ class CreateProject extends React.Component{
         }, this);
         return(
         <div className={s.pageContainer}>
-
-            <h3>Create Project</h3>
-            <br/>
-            <form>
+            <form className={s.projectForm}>
+              <h2>Create Project</h2>
+              <br/>
               {this.state.formError && <div bsStyle="danger" className="text-center">{this.state.formError}<br/></div>}
                 <div>
                     <TextField
                           hintText="Give a name to your project"
                           floatingLabelText="Project Name"
                           value={this.state.form.title}
+                          name="title"
                           onChange={this.handleChange}
                         />
 
                 </div>
-                <div >
+                <div className={s.formField}>
                       <label>Positions of your crew (Add duplicate entries if you need more than 1 person for the position)</label>
                        <br/>
                       {positionList}
@@ -149,20 +159,20 @@ class CreateProject extends React.Component{
                     <DatePicker minDate={new Date()} floatingLabelText="Final Deadline" hintText="Deadline of the project" value={this.state.form.finalDeadline} onChange={this.handleDateChange.bind(this, 'finalDeadline')}/>
                 </div>
                 <div>
-                      <SelectField floatingLabelText="Method to transfer files" onChange={this.handleChange}>
+                      <SelectField floatingLabelText="Method to transfer files" onChange={this.handleTransferFileMethodChagen} name="transferFileMethod">
                         <MenuItem value="Provide SD card" primaryText="Provide SD card" />
                         <MenuItem value="Upload to Web" primaryText="Upload to Web" />
                       </SelectField>
                 </div>
                 <div>
-                    <TextField floatingLabelText="Description" value={this.state.form.description}
+                    <TextField floatingLabelText="Description (It is important to let people know details of your project in order to accept it.)" value={this.state.form.description}
                       hintText="Description for the crew to understand your project details." multiLine={true} rows={5} fullWidth={true} onChange={this.handleChange}
                     />
                 </div>
-                <FlatButton label="Cancel" href="/myProjects"  />
-
-                <RaisedButton label="Create" primary={true} onClick={this.createProject} />
-
+                <div className={s.formActions}>
+                  <FlatButton label="Cancel" href="/myProjects" />
+                  <RaisedButton label="Create" primary={true} onClick={this.createProject} />
+              </div>
             </form>
         </div>
         );

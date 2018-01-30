@@ -1,4 +1,7 @@
 import { createStore } from 'redux'
+import _ from 'lodash';
+import history from '../core/history';
+
 
 var currentUser = null;
 function update(state = 0, action) {
@@ -30,7 +33,7 @@ store.subscribe(() =>
   console.log(store.getState())
 )
 
-store.getCurrentUser = () => {return currentUser};
+store.getCurrentUser = () => {return currentUser || (typeof sessionStorage != 'undefined' ? JSON.parse(sessionStorage.getItem('crewbrick')): null)};
 // The only way to mutate the internal state is to dispatch an action.
 // The actions can be serialized, logged or stored and later replayed.
 export default store;

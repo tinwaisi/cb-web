@@ -15,6 +15,8 @@ export const dataMap = {
     PERSON_FIELD_MAP: {
         'password': '891999ff541ecc95b51e25f8ed230df11b816a4f',
         'role': '7f2ecafe427ee60cf8c550969dbe494caf92684f',
+        //TODO: add new filed for role2
+        'role2': '7f2ecafe427ee60cf8c550969dbe494caf92684f',
         'salary': 'bfef00b1dbc3f7a4a6067545a603d1b56a8300a1'
     },
     PROJECT_STAGES: {

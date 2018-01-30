@@ -99,7 +99,7 @@ class MyProjects extends React.Component{
 
         return(
             <div className={s.pageContainer}>
-                <div className={s.flexRow}>
+                <div className={s.flexRowSpread}>
                     <h3>My Projects</h3>
                     <FloatingActionButton href="/createProject">
                         <i className={s.materialIcons}>add</i>
