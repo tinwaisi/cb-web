@@ -8,18 +8,20 @@
  */
 
 @import '../variables.css';
+@import '../../common/common.css';
 
 :root {
   --brand-color: #fff;
 }
 
 .root {
-  background: #ffd735;
+  background: var(--palette-grey-800);
   color: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
 }
 
 .container {
-  margin: 0 140px;
+  margin: 0 20px;
   padding: 20px 0;
 }
 

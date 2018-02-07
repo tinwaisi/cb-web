@@ -1,0 +1,21 @@
+@import '../../common/common.css';
+
+.roleItem{
+    margin-right: 2rem;
+}
+
+.formField{
+    margin: 1rem 0;
+}
+
+.projectForm{
+    margin: 2rem 5rem;
+    box-shadow: 0px 1px 5px 1px rgba(0, 0, 0, 0.12);
+    background: white;
+    padding: 2rem;
+    border-radius: 5px;
+    .formActions{
+        text-align: center;
+        margin-top: 2rem;
+    }
+}

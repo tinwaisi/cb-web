@@ -60,7 +60,7 @@ exports.getUsers = function(req, res){
             delete response.data[i][dataMap.PERSON_FIELD_MAP.password];
         }
         console.log(response);
-        return res.send(response.data);
+        return res.json(response.data);
 
     });
 };
@@ -68,23 +68,26 @@ exports.getUsers = function(req, res){
 exports.getUser = function(req, res){
     console.log("get user sessionid", req.session.id);
     console.log("get user", req.user);
-    req.user ? res.send({user: req.user}) : res.status(403).send({message: 'User not logged in.'});
+    req.user ? res.json({user: req.user}) : res.status(403).json({message: 'User not logged in.'});
 };
 
 exports.getUserDeals = function(req, res){
     console.log("req is", req.session);
     console.log( req.session.id);
 
+  const path = `/persons/${req.params.userId}/deals`;
+  console.log("calling...", path);
 //    if(req.params.userId === req.user.id || req.session.userObject.id){
         pipeClient.makeRequest('/persons/'+req.params.userId+'/deals', 'get').then(response => {
-            res.send(response.data);
+          console.log(response.data);
+          res.json(response.data||[]);
         });
 //    }
 };
 exports.getUserById = function(req, res){
     exports.internalGetUserById(req.params.id).then((response)=>{
         console.log("getUserById:", response);
-        res.send(response);
+        res.json(response);
     });
 }
 exports.internalGetUserById = function(id){
@@ -111,30 +114,30 @@ exports.loginUser = function(req, res){
                                     if (!error) {
                                         req.user = req.session.user = response.data;
                                         req.session.save();
-                                        return res.send(response.data);
+                                        return res.json(response.data);
                                     }
                                 });
 
                             }else {
-                                return res.send("Invalid login");
+                                return res.status(403).json({error: "Invalid login"});;
                             }
                             });
                         break;
                     }
                 }
             }else {
-                return res.send("Invalid login");
+                return res.status(400).json({error: "Invalid login"});
             }
 
         });} catch(e){
-            return res.send(e);
+            return res.status(500).json({error: "Invalid login"});
         }
     }
 };
 
 exports.getDeal = function(req, res){
     pipeClient.makeRequest('/deals/'+req.params.id, 'get').then(response => {
-        res.send(response.data);
+        res.json(response.data);
     });
 };
 
@@ -149,10 +152,10 @@ exports.createDeal = function(req, res){
     }
     pipeClient.saveDeal(form.title, null, req.body.userId, null, dataMap.PROJECT_STAGES['Created'], null, customFields).then(response => {
                 console.log(response);
-                return res.send(response);
+                return res.json(response);
 
             }).catch((e)=>{
-                return res.send(e);
+                return res.json(e);
             });
 };
 exports.createPerson = function(req, res){
@@ -167,10 +170,10 @@ exports.createPerson = function(req, res){
     });
     pipeClient.savePerson(form.name, form.email, null, null, null, customFields).then(response => {
         console.log(response);
-        return res.send(response);
+        return res.json(response);
 
     }).catch((e)=>{
-        return res.send(e);
+        return res.json(e);
     });
 };
 
@@ -184,10 +187,10 @@ exports.addParticipantsToDeal = function(req, res){
     }
 
     Promise.all(promises).then((response)=>{
-        return res.send(response);
+        return res.json(response);
 
     }).catch((e)=>{
-        return res.send(e);
+        return res.json(e);
     });
 };
 
@@ -196,17 +199,17 @@ exports.updateDeal = function(req, res){
     deal = req.body.project;
 
     pipeClient.makeRequest(`/deals/${dealId}`, 'put', deal).then(response => {
-        return res.send(response);
+        return res.json(response);
     }).catch((e)=>{
-        return res.send(e);
+        return res.json(e);
     });
 };
 
 exports.deleteDeal = function(req, res){
     pipeClient.makeRequest('/deals/'+id, 'delete').then(response => {
-        return res.send(response);
+        return res.json(response);
     }).catch((e)=>{
-        return res.send(e);
+        return res.json(e);
     });
 }
 
@@ -316,7 +319,7 @@ exports.getCandidatesForProject = function(req, res){
 
              Promise.all(promises).then(resultResponse => {
                  console.log('getCandidatesForProject resultResponse = ', resultResponse);
-                 res.send(resultResponse);
+                 res.json(resultResponse);
 
              });
         }
@@ -366,28 +369,28 @@ exports.respondToProject = function(req, res){
                                 'This event was created via Crewbrick.\n' + project[dataMap.PROJECT_FIELD_MAP.description]
                             ).then((data)=>{
                                 console.log('respondToProject marked to calendar', data);
-                                res.send(data);
+                                res.json(data);
                             }).catch((e)=>{
-                                res.status(500).send(e);
+                                res.status(500).json(e);
                             });
                         }else {
-                            res.send(updateDealRes);
+                            res.json(updateDealRes);
                         }
                     }
                 }).catch((e)=>{
-                    return res.send(e);
+                    return res.json(e);
                 });
             }
         });
      }else {
-        res.send(403, "User not logged in")
+        res.json(403, "User not logged in")
      }
 };
 
 exports.saveUserPaymentInfo = function(req, res){
     if(req.body.token){
         exports.internalUpdatePerson({id: req.params.id, paymentToken: req.body.token}).then((response)=>{
-            res.send(response);
+            res.json(response);
         });
     }
 }

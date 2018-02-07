@@ -10,9 +10,19 @@ import {RaisedButton, FlatButton, Dialog, TextField} from 'material-ui';
 
 
 class PickCrew extends React.Component{
+
+    state = {
+      paymentMethod:{},
+      project: {},
+      positionSelections: {},
+      openSubmitPopup: false,
+      positionsNeeded: {},
+      candidatesTable: [],
+      form: {}
+    };
+
     constructor(props){
             super(props);
-            this.state = {project:{}, positionSelections:{}, openSubmitPopup:false, positionsNeeded: {}, candidatesTable: []};
             this.clickPeople = this.clickPeople.bind(this);
             this.submitSelections = this.submitSelections.bind(this);
             this.closeSubmitPopup = this.closeSubmitPopup.bind(this);
@@ -133,45 +143,19 @@ class PickCrew extends React.Component{
               />,
             ];
 
+        const {paymentMethod} = this.state;
         return (
-         <Grid container>
+         <div>
             <h2>Pick the crew for {this.state.project.title}</h2>
             {lists}
             <br/>
-            {!currentUser.paymentMethod && <div>
-                 <Grid>
+            {currentUser && !currentUser.paymentMethod && <div>
+                 <div >
                     <h4>Payment Method</h4>
                     <form>
-                        <div>
-                            <TextField type="text" name="title" value={this.state.paymentMethod.cardNum} placeholder="Give a name to your project" onChange={this.handleChange}/>
-                        </div>
-                        <div >
-                              <label>Positions of your crew (Add duplicate entries if you need more than 1 person for the position)</label>
-                               <br/>
-                              {positionList}
 
-                        </div>
-                        <div>
-                            <label>Filming Date(s)</label>
-                            <TextField type="text" name="filmingDates" value={this.state.form.filmingDates} placeholder="Dates for the shooting to happen." onChange={this.handleChange}/>
-                        </div>
-                        <div>
-                            <DatePicker hintText="Final Deadline (format dd-mm-yyyy)" value={this.state.form.finalDeadline} onChange={this.handleDateChange.bind(this, 'finalDeadline')} />
-                        </div>
-                        <div controlId="formControlsSelect">
-                              <SelectField componentClass="select" floatingLabelText="Method to transfer files (for the crew to know what to expect)"
-                                    placeholder="select" onChange={this.handleChange}>
-                                <MenuItem value="Provide SD card" primaryText="Provide Own SD card"/>
-                                <MenuItem value="Upload to Web" primaryText="Upload to Web"/>
-                              </SelectField>
-                        </div>
-                        <div>
-                            <TextField multiline rows={5} name="description" value={this.state.form.description} placeholder="Description for the crew to understand your project details." onChange={this.handleChange}/>
-                        </div>
-                        <FlatButton to="/myProjects">Cancel</FlatButton>&nbsp;
-                        <RaisedButton bsStyle="primary" onClick={this.createProject}>Create</RaisedButton>
                     </form>
-                </Grid>
+                </div>
             </div>}
             <RaisedButton onClick={this.openSubmitPopup}>Finish</RaisedButton>
             <Dialog
@@ -184,7 +168,7 @@ class PickCrew extends React.Component{
               <p>By submitting the selections, the crew members will receive a project invite. Once all of the crew member accepts the invite, your
               account will be charged half of the total price. The crew will receive the amount and show up at the project.</p>
             </Dialog>
-         </Grid>
+         </div>
         )
     }
 }

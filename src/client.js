@@ -15,7 +15,8 @@ import { createPath } from 'history/PathUtils';
 import history from './core/history';
 import App from './components/App';
 import { updateMeta } from './core/DOMUtils';
-import { ErrorReporter, deepForceUpdate, getUserFromSession } from './core/appUtils';
+import { ErrorReporter, deepForceUpdate } from './core/devUtils';
+import { getUserFromSession } from './core/appUtils';
 import store from './store/contextStore';
 
 /* eslint-disable global-require */

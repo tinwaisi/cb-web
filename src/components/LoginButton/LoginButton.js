@@ -14,6 +14,7 @@ import history from '../../core/history';
 import { setUserToSession } from '../../core/appUtils';
 import store from '../../store/contextStore';
 import {RaisedButton, Dialog, TextField, FlatButton} from 'material-ui';
+import AlertMessage from '../../common/AlertMessage/AlertMessage';
 
 
 
@@ -46,8 +47,10 @@ class LoginButton extends React.Component {
         email = this.state.email,
         password = this.state.password,
         _this = this;
+      const {onLogin} = this.props;
 
-        if(email && password){
+
+      if(email && password){
           fetch('/login', {
             method: 'POST',
             headers: {
@@ -64,16 +67,21 @@ class LoginButton extends React.Component {
             credentials: 'include'
           })
           .then((res) => { return res.json(); })
-          .then(function(responseData){
+            .then((responseData)=>{
+              if(!responseData.error){
                 store.dispatch({ type: 'INIT_CURRENT_USER', currentUser:responseData });
                 setUserToSession(responseData);
                 history.push('/myProjects');
-                _this.close();
-          }).catch(function(error){
-              _this.setState({formError:error});
+                this.close();
+              } else {
+                this.setState({formError:responseData.error});
+              }
+
+            }).catch((error)=>{
+            this.setState({formError:error});
           });
         } else {
-          _this.setState({formError:"Invalid Credential"});
+          this.setState({formError:"Invalid Credential"});
         }
     }
       responseGoogle(response){
@@ -116,7 +124,7 @@ class LoginButton extends React.Component {
                              open={this.state.showModal}
                              onRequestClose={this.close}
                            >
-                               {this.state.formError && <Alert bsStyle="danger" className="text-center">{this.state.formError}<br/></Alert>}
+                               {this.state.formError && <div className="text-center"><AlertMessage text={this.state.formError}></AlertMessage></div>}
 
                              <div>
                                   <div><TextField type="email" name="email" value={this.state.form.email} placeholder="Email" onChange={this.handleChange}/></div>

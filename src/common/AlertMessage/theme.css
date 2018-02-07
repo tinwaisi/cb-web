@@ -1,0 +1,19 @@
+@import "react-toolbox/lib/colors";
+
+.container{
+    width: 100%;
+    padding: 1rem 0;
+
+    &.error{
+        color: var(--palette-red-400);
+    }
+    &.warning{
+        color: var(--palette-amber-800);
+    }
+    &.success{
+        color: var(--palette-green-400);
+    }
+    &.info{
+        color: var(--palette-blue-400);
+    }
+}

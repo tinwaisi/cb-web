@@ -14,8 +14,10 @@ import s from './Navigation.css';
 import LoginButton from '../LoginButton';
 import SignUpButton from '../SignUpButton';
 import { getUserFromSession, removeUserFromSession, setUserToSession } from '../../core/appUtils';
-import { Button} from 'react-bootstrap';
-import store from '../../store/contextStore';
+import {FlatButton} from 'material-ui';
+const {connect} = require('react-redux');
+import history from '../../core/history';
+let router = require('../../core/router').default;
 
 class Navigation extends React.Component {
   contextTypes: {
@@ -27,23 +29,43 @@ class Navigation extends React.Component {
     this.signout = removeUserFromSession.bind(this);
   }
   componentWillMount(){
-    (!this.state.currentUser && typeof localStorage !== 'undefined') ? this.setState({currentUser: getUserFromSession()}): null;
+    this.setState({currentUser: this.props.store.getCurrentUser()})
+  }
+
+  test(){
+    history.push('/myProjects');
+  }
+  refreshLoginStatus(){
+    history.replace('/myProjects');
   }
   render() {
-    const currentUser = store.getCurrentUser();
+    const {currentUser} = this.state;
     return (
       <div className={s.root} role="navigation">
+      {currentUser &&
+      <div>
         <a className={s.link} href="/myProjects">My Projects</a>
         <a className={s.link} href="/myCalendar">My Calendar</a>
-        {!currentUser && <div className={s.flexDiv}>
-            <span className="pull-right"><LoginButton/></span>
-            <span className="pull-right"><SignUpButton/></span>
-        </div>}
-
-        <span className="pull-right">{currentUser && <a href="/signout"><Button className="btn" onClick={this.signout}>Sign out</Button></a>}  </span>
       </div>
+      }
+      {!currentUser && <div className={s.flexDiv}>
+          <span className="pull-right"><LoginButton /></span>
+          <span className="pull-right"><SignUpButton/></span>
+      </div>}
+
+      <span className="pull-right">{currentUser && <a href="/signout"><FlatButton label="Sign out" onClick={this.signout}/></a>}</span>
+      <div onClick={this.test.bind(this)}>test</div>
+
+    </div>
     );
   }
 }
 
-export default withStyles(s)(Navigation);
+const mapStateToProps = (state, props) => {
+  console.log("test");
+  return {
+
+  }
+};
+
+export default withStyles(s)(connect(mapStateToProps)(Navigation)) ;

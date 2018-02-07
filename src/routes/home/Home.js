@@ -28,7 +28,7 @@ class Home extends React.Component {
       <div className={s.root}>
         <div className={s.container}>
           <div className="text-center">
-            <h1 >Welcome to Crewbrick</h1>
+            <h1 >Artwork Portal</h1>
             <p>New way of film/video production</p>
             {!currentUser && <SignUpButton/>}
           </div>

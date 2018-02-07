@@ -1,7 +1,17 @@
 import React from 'react';
 import { getUserFromSession } from '../../core/appUtils';
 import {dataMap} from '../../config';
-import {RaisedButton, FlatButton, Table, FontIcon, TableBody, TableHeader, FloatingActionButton} from 'material-ui';
+import {
+  RaisedButton,
+  FlatButton,
+  Table,
+  TableBody,
+  TableHeader,
+  FloatingActionButton,
+  TableHeaderColumn,
+  TableRow,
+  TableRowColumn,
+} from 'material-ui';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from '../../common/common.css';
 
@@ -70,12 +80,12 @@ class MyProjects extends React.Component{
         let completedProjects = [];
         var projects = this.state.projectList.forEach((item, index) => {
                     item.stage_id < 10 ?
-                    startedProjects.push(<tr key={item.id}>
-                        <td><a href={`/projectDetails/${item.id}`}>{item.title}</a></td>
-                        <td>{item[dataMap.PROJECT_FIELD_MAP.filmingDates]}</td>
-                        <td>{item[dataMap.PROJECT_FIELD_MAP.finalDeadline]}</td>
-                        <td>
-                            {item.stage_id === 6 && <span><RaisedButton href={`/pickCrew/${item.id}`} label="Pick the Crew"></RaisedButton>&nbsp;
+                    startedProjects.push(<TableRow key={item.id}>
+                        <TableRowColumn><a href={`/projectDetails/${item.id}`}>{item.title}</a></TableRowColumn>
+                        <TableRowColumn>{item[dataMap.PROJECT_FIELD_MAP.filmingDates]}</TableRowColumn>
+                        <TableRowColumn>{item[dataMap.PROJECT_FIELD_MAP.finalDeadline]}</TableRowColumn>
+                        <TableRowColumn>
+                            {item.stage_id === 6 && <span><RaisedButton href={`/pickCrew/${item.id}`} primary={true} label="Pick the Crew"></RaisedButton>&nbsp;
                             <FlatButton className="btn-warning" onClick={()=>this.deleteProject(item.id)}>Delete Project</FlatButton></span>}
                             {item.stage_id === 8 && (item.person_id.value === this.state.currentUser.id) && <span>Pending</span>}
                             {item.stage_id === 8 && (item.person_id.value !== this.state.currentUser.id) && (!item.accepted) && <span><Button onClick={()=>this.responseToInvite(true, item)}>Accept</Button>
@@ -84,22 +94,22 @@ class MyProjects extends React.Component{
 
                             {item.stage_id === 9 && <span>Confirmed</span>}
                             {item.stage_id === 10 && <span>Complete</span>}
-                        </td>
-                    </tr>) :
-                    completedProjects.push(<tr key={item.id}>
-                          <td><a href={`/projectDetails/${item.id}`}>{item.title}</a></td>
-                          <td>{item[dataMap.PROJECT_FIELD_MAP.filmingDates]}</td>
-                          <td>{item[dataMap.PROJECT_FIELD_MAP.finalDeadline]}</td>
-                          <td>
+                        </TableRowColumn>
+                    </TableRow>) :
+                    completedProjects.push(<TableRow key={item.id}>
+                          <TableRowColumn><a href={`/projectDetails/${item.id}`}>{item.title}</a></TableRowColumn>
+                          <TableRowColumn>{item[dataMap.PROJECT_FIELD_MAP.filmingDates]}</TableRowColumn>
+                          <TableRowColumn>{item[dataMap.PROJECT_FIELD_MAP.finalDeadline]}</TableRowColumn>
+                          <TableRowColumn>
                               {item.stage_id === 10 && <span>Complete</span>}
-                          </td>
-                     </tr>)
+                          </TableRowColumn>
+                     </TableRow>)
 
                 });
 
         return(
-            <div className={s.pageContainer}>
-                <div className={s.flexRow}>
+            <div>
+                <div className={s.flexRowSpread}>
                     <h3>My Projects</h3>
                     <FloatingActionButton href="/createProject">
                         <i className={s.materialIcons}>add</i>
@@ -108,12 +118,12 @@ class MyProjects extends React.Component{
                 <br/>
                  <Table responsive striped>
                     <TableHeader>
-                      <tr>
-                        <th>Project Name</th>
-                        <th>Filming Dates</th>
-                        <th>Final Deadline</th>
-                        <th>Status</th>
-                      </tr>
+                      <TableRow>
+                        <TableHeaderColumn>Project Name</TableHeaderColumn>
+                        <TableHeaderColumn>Filming Dates</TableHeaderColumn>
+                        <TableHeaderColumn>Final Deadline</TableHeaderColumn>
+                        <TableHeaderColumn>Status</TableHeaderColumn>
+                      </TableRow>
                     </TableHeader>
                     <TableBody>
                         {startedProjects}
@@ -124,12 +134,12 @@ class MyProjects extends React.Component{
                         <h3>Completed Projects</h3>
                         <Table responsive striped>
                             <TableBody>
-                              <tr>
-                                <th>Project Name</th>
-                                <th>Filming Dates</th>
-                                <th>Final Deadline</th>
-                                <th>Status</th>
-                              </tr>
+                              <TableRow>
+                                <TableHeaderColumn>Project Name</TableHeaderColumn>
+                                <TableHeaderColumn>Filming Dates</TableHeaderColumn>
+                                <TableHeaderColumn>Final Deadline</TableHeaderColumn>
+                                <TableHeaderColumn>Status</TableHeaderColumn>
+                              </TableRow>
                             </TableBody>
                             <TableBody>
                                 {completedProjects}

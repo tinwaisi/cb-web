@@ -50,7 +50,7 @@ class Html extends React.Component {
             />,
           )}
         </head>
-        <body>
+        <body  style={{background: '#fafafa'}}>
           <div
             id="app"
             // eslint-disable-next-line react/no-danger
